@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>NourishTrack — Mindful Calorie & Weight Companion</title>
+  <!-- Google Fonts: Plus Jakarta Sans & Inter (Sesuai DESIGN.md) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- TOP APP BAR -->
+  <header class="top-bar">
+    <div class="brand-wrap">
+      <div class="brand-logo" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a9 9 0 0 0-9 9c0 4.97 4.03 9 9 9s9-4.03 9-9a9 9 0 0 0-9-9z"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">NourishTrack</div>
+        <div class="brand-subtitle" id="headerPageSubtitle">Ringkasan</div>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <!-- Toggle Mode Pasangan ("Kita") -->
+      <button type="button" class="pill-kita" id="btnToggleKita" title="Lihat ringkasan bersama pasangan">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span>Kita</span>
+      </button>
+
+      <!-- Tombol Pengaturan Profil -->
+      <button type="button" class="avatar-btn" id="btnOpenProfile" title="Pengaturan Profil & Target">
+        <span id="avatarInitial">S</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- BANNER MODE KITA (RINGKASAN BERSAMA SUAMI & ISTRI) -->
+  <section class="couple-drawer hidden" id="coupleComparisonCard">
+    <div class="couple-header">
+      <strong>🌱 Progres Harian Kita Berdua</strong>
+      <span class="caption-muted">Saling dukung capai target sehat</span>
+    </div>
+    <div class="couple-grid" id="coupleComparisonContent"></div>
+  </section>
+
+  <!-- BANNER PERINGATAN TARGET KALORI 100% TERCAPAI (F3 PRD) -->
+  <div class="calorie-alert-banner hidden" id="calorieLimitBanner" role="alert">
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-text">
+      <strong id="alertBannerTitle">Target Kalori Hari Ini Tercapai!</strong>
+      <p id="alertBannerDesc">Asupan Anda sudah mencapai 100% dari anggaran harian. Saatnya berhenti makan atau pilih air putih.</p>
+    </div>
+    <button type="button" class="alert-close" id="btnCloseAlert" aria-label="Tutup">&times;</button>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="app-main">
+
+    <!-- BARIS SAPAAN & PEMILIH TANGGAL / AKUN -->
+    <div class="greeting-bar" id="greetingSection">
+      <div class="greeting-top">
+        <h1 class="greeting-title">Halo, <span id="activeUserName">Istri</span> 👋</h1>
+        <button type="button" class="user-switch-pill" id="btnSwitchAccount" title="Ganti Pengguna (Suami / Istri)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+            <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+          </svg>
+          <span id="switchUserLabel">Istri</span>
+        </button>
+      </div>
+
+      <!-- Navigasi Tanggal -->
+      <div class="date-navigator">
+        <button type="button" class="date-Step-btn" id="btnPrevDate" aria-label="Hari Sebelumnya">&lsaquo;</button>
+        <div class="date-label-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <input type="date" id="datePickerInput" class="date-input-hidden" />
+          <span id="displayDateText">Selasa, 27 Okt 2026</span>
+        </div>
+        <button type="button" class="date-Step-btn" id="btnNextDate" aria-label="Hari Berikutnya">&rsaquo;</button>
+      </div>
+    </div>
+
+    <!-- =================================================================
+         TAB 1: RINGKASAN (HOME DAILY SUMMARY - home_daily_summary.png)
+         ================================================================= -->
+    <section class="tab-pane active" id="tab-ringkasan">
+      <div class="dashboard-layout">
+        <!-- Kolom Kiri / Hero Calorie Card -->
+        <div class="card hero-calorie-card">
+          <div class="ring-container">
+            <svg class="calorie-ring-svg" width="210" height="210" viewBox="0 0 210 210">
+              <circle class="ring-track" cx="105" cy="105" r="86" stroke-width="14" fill="none" />
+              <circle class="ring-progress" id="heroRingCircle" cx="105" cy="105" r="86" stroke-width="14" fill="none" stroke-dasharray="540.35" stroke-dashoffset="167" />
+            </svg>
+            <div class="ring-center-text">
+              <span class="ring-caption">TERKONSUMSI</span>
+              <div class="ring-hero-number" id="heroConsumedKcal">1.247</div>
+              <span class="ring-sub-target">dari target <strong id="heroTargetKcal">1.800</strong> kkal</span>
+            </div>
+          </div>
+
+          <div class="remaining-pill-wrap">
+            <span class="remaining-pill" id="heroRemainingPill">
+              <span class="status-dot"></span>
+              <span id="heroRemainingText">Sisa 553 kkal · 69% tercapai</span>
+            </span>
+          </div>
+
+          <div class="mindful-feedback-box" id="heroMindfulNotice">
+            <span class="check-badge">✓</span>
+            <span id="heroMindfulText">Sisa kalori aman untuk makan malam! Pilihan sehat tetap terjaga.</span>
+          </div>
+        </div>
+
+        <!-- Kolom Kanan: Distribusi Makan, Tombol Cepat, BMI/TDEE, Catatan Terakhir -->
+        <div class="summary-side-stack">
+          <div class="section-head-inline">
+            <h2 class="section-title">Distribusi Makan</h2>
+            <span class="caption-muted">4 Waktu</span>
+          </div>
+
+          <div class="meal-dist-grid">
+            <div class="dist-card" data-meal="Sarapan">
+              <div class="dist-icon breakfast-tint">🥐</div>
+              <div>
+                <div class="dist-label">Sarapan</div>
+                <div class="dist-val"><strong id="distSarapanKcal">0</strong> <span>kkal</span></div>
+              </div>
+            </div>
+            <div class="dist-card" data-meal="Makan siang">
+              <div class="dist-icon lunch-tint">🥗</div>
+              <div>
+                <div class="dist-label">Makan Siang</div>
+                <div class="dist-val"><strong id="distSiangKcal">0</strong> <span>kkal</span></div>
+              </div>
+            </div>
+            <div class="dist-card" data-meal="Makan malam">
+              <div class="dist-icon dinner-tint">🍲</div>
+              <div>
+                <div class="dist-label">Makan Malam</div>
+                <div class="dist-val"><strong id="distMalamKcal">0</strong> <span>kkal</span></div>
+              </div>
+            </div>
+            <div class="dist-card" data-meal="Camilan">
+              <div class="dist-icon snack-tint">🍎</div>
+              <div>
+                <div class="dist-label">Camilan</div>
+                <div class="dist-val"><strong id="distCamilanKcal">0</strong> <span>kkal</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tombol Aksi Utama -->
+          <div class="quick-cta-row">
+            <button type="button" class="btn-primary" id="btnHomeLogFood">
+              <span>🍴 Catat Makanan</span>
+            </button>
+            <button type="button" class="btn-soft" id="btnHomeLogWeight">
+              <span>⚖️ Catat Berat</span>
+            </button>
+          </div>
+
+          <!-- Kartu Metrik BMI, TDEE, Berat Kini -->
+          <div class="metrics-trio-grid">
+            <div class="metric-mini-card">
+              <span class="metric-mini-label">BMI</span>
+              <div class="metric-mini-num" id="metricBmiVal">23.8</div>
+              <span class="metric-badge-status" id="metricBmiCategory">Normal</span>
+            </div>
+            <div class="metric-mini-card">
+              <span class="metric-mini-label">TDEE</span>
+              <div class="metric-mini-num" id="metricTdeeVal">2.150</div>
+              <span class="metric-mini-sub">Kebutuhan harian</span>
+            </div>
+            <div class="metric-mini-card">
+              <span class="metric-mini-label">Berat Kini</span>
+              <div class="metric-mini-num"><span id="metricCurrentWeight">64.2</span> <small>kg</small></div>
+              <span class="metric-mini-sub" id="metricWeightUpdated">Update Hari Ini</span>
+            </div>
+          </div>
+
+          <!-- Catatan Terakhir Hari Ini -->
+          <div class="card recent-logs-card">
+            <div class="section-head-inline">
+              <h2 class="section-title">Catatan Terakhir Hari Ini</h2>
+              <span class="pulse-dot"></span>
+            </div>
+            <div id="recentLogsList" class="recent-logs-list"></div>
+            <button type="button" class="link-view-all" id="btnGoToDiary">
+              Lihat semua buku makan &rarr;
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         TAB 2: BUKU MAKAN (FOOD DIARY - screen.png)
+         ================================================================= -->
+    <section class="tab-pane" id="tab-bukumakan">
+      <!-- Kartu Target Kalori Harian + Makro Bar -->
+      <div class="card diary-macro-card">
+        <div class="diary-macro-top">
+          <div>
+            <div class="overline-label">TARGET KALORI HARIAN</div>
+            <div class="diary-calorie-headline">
+              <strong id="diaryConsumedKcal">1.247</strong>
+              <span>/ <span id="diaryTargetKcal">1.800</span> kkal</span>
+            </div>
+          </div>
+          <span class="pill-remaining-soft" id="diaryRemainingBadge">Tersisa 553 kkal</span>
+        </div>
+
+        <div class="linear-progress-track">
+          <div class="linear-progress-fill" id="diaryProgressBar" style="width: 69%;"></div>
+        </div>
+
+        <div class="macro-pills-grid">
+          <div class="macro-box">
+            <span class="macro-box-label">Karbo (<span id="macroCarbPct">65%</span>)</span>
+            <strong class="macro-box-val" id="macroCarbGram">148g</strong>
+          </div>
+          <div class="macro-box">
+            <span class="macro-box-label">Protein (<span id="macroProtPct">78%</span>)</span>
+            <strong class="macro-box-val" id="macroProtGram">72g</strong>
+          </div>
+          <div class="macro-box">
+            <span class="macro-box-label">Lemak (<span id="macroFatPct">54%</span>)</span>
+            <strong class="macro-box-val" id="macroFatGram">38g</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kelompok Waktu Makan (Sarapan, Makan Siang, Makan Malam, Camilan) -->
+      <div id="diaryMealGroupsContainer" class="diary-groups-stack"></div>
+
+      <!-- Kartu Target Air Harian -->
+      <div class="card water-tracker-card">
+        <div class="water-left">
+          <div class="water-icon">💧</div>
+          <div>
+            <div class="water-title">Target Air: <span id="waterCurrentLiter">1.75</span> / 2.0 L</div>
+            <div class="water-sub" id="waterSubtitle">Hampir tercapai, 1 gelas lagi!</div>
+          </div>
+        </div>
+        <button type="button" class="btn-water-add" id="btnAddWater" title="Tambah 250 ml air">+</button>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         TAB 3: CATAT MAKANAN (QUICK LOG & AI SCAN - catat_makanan.jpg)
+         ================================================================= -->
+    <section class="tab-pane" id="tab-catat">
+      <div class="card log-food-card">
+        <div class="log-card-header">
+          <h2 class="section-title">Catat Makanan</h2>
+          <span class="caption-muted">Target &lt; 30 detik</span>
+        </div>
+
+        <!-- Pilihan Waktu Makan -->
+        <div class="meal-time-chips" id="mealTimeSelectGroup">
+          <button type="button" class="meal-chip" data-waktu="Sarapan">
+            <span class="dot-amber"></span> Sarapan
+          </button>
+          <button type="button" class="meal-chip active" data-waktu="Makan siang">
+            <span class="dot-sprout"></span> Makan Siang ✓
+          </button>
+          <button type="button" class="meal-chip" data-waktu="Makan malam">
+            <span class="dot-periwinkle"></span> Makan Malam
+          </button>
+          <button type="button" class="meal-chip" data-waktu="Camilan">
+            <span class="dot-orchid"></span> Camilan
+          </button>
+        </div>
+
+        <!-- Sub-Tab Metode Input: Cari Daftar | Isi Manual | Scan AI -->
+        <div class="input-mode-tabs">
+          <button type="button" class="mode-tab active" data-mode="list">🔍 Cari Daftar</button>
+          <button type="button" class="mode-tab" data-mode="manual">✍️ Isi Manual</button>
+          <button type="button" class="mode-tab" data-mode="photo">📷 Scan AI 📸</button>
+        </div>
+
+        <!-- PANEL 3A: CARI DARI DAFTAR MAKANAN -->
+        <div class="log-mode-panel active" id="modePanel-list">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="foodSearchInput" placeholder="Cari nama makanan (misal: Nasi Goreng, Ayam)..." />
+          </div>
+
+          <div class="category-filter-pills" id="foodCategoryPills">
+            <button type="button" class="cat-pill active" data-cat="ALL">🕒 Sering dimakan</button>
+            <button type="button" class="cat-pill" data-cat="Makanan Indonesia">Makanan Indonesia</button>
+            <button type="button" class="cat-pill" data-cat="Tinggi Protein">Tinggi Protein</button>
+          </div>
+
+          <div class="catalog-list" id="foodCatalogListContainer"></div>
+        </div>
+
+        <!-- PANEL 3B: ISI MANUAL -->
+        <div class="log-mode-panel" id="modePanel-manual">
+          <form id="manualFoodForm" class="form-stack">
+            <input type="hidden" id="editLogId" value="" />
+            <div class="form-group">
+              <label for="inpFoodName">Nama Makanan *</label>
+              <input type="text" id="inpFoodName" required placeholder="Contoh: Soto Ayam Kampung" />
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="inpFoodPortion">Porsi & Satuan *</label>
+                <input type="text" id="inpFoodPortion" required placeholder="1 mangkuk (250g)" />
+              </div>
+              <div class="form-group">
+                <label for="inpFoodKcal">Kalori (kkal) *</label>
+                <input type="number" id="inpFoodKcal" required min="1" max="5000" placeholder="320" />
+              </div>
+            </div>
+            <div class="form-row-3">
+              <div class="form-group">
+                <label for="inpFoodCarbs">Karbo (g)</label>
+                <input type="number" id="inpFoodCarbs" min="0" placeholder="35" />
+              </div>
+              <div class="form-group">
+                <label for="inpFoodProtein">Protein (g)</label>
+                <input type="number" id="inpFoodProtein" min="0" placeholder="22" />
+              </div>
+              <div class="form-group">
+                <label for="inpFoodFat">Lemak (g)</label>
+                <input type="number" id="inpFoodFat" min="0" placeholder="10" />
+              </div>
+            </div>
+            <label class="checkbox-row">
+              <input type="checkbox" id="chkSaveToCatalog" />
+              <span>Simpan juga ke Daftar Makanan favorit agar besok tinggal pilih</span>
+            </label>
+          </form>
+        </div>
+
+        <!-- PANEL 3C: SCAN FOTO MAKANAN AI (F5 PRD) -->
+        <div class="log-mode-panel" id="modePanel-photo">
+          <div class="photo-upload-zone" id="photoDropZone">
+            <input type="file" id="inpFoodPhoto" accept="image/*" capture="environment" class="hidden-file" />
+            <div class="photo-placeholder" id="photoPlaceholder">
+              <div class="camera-circle">📸</div>
+              <strong>Ambil Foto atau Pilih Gambar Makanan</strong>
+              <p>AI akan memperkirakan nama hidangan, porsi, dan jumlah kalorinya secara otomatis.</p>
+              <button type="button" class="btn-soft" id="btnTriggerCamera">Pilih / Potret Makanan</button>
+            </div>
+            <div class="photo-preview-wrap hidden" id="photoPreviewContainer">
+              <img id="imgFoodPreview" alt="Pratinjau Foto Makanan" />
+              <button type="button" class="btn-ghost-sm" id="btnRetakePhoto">Ganti Foto</button>
+            </div>
+          </div>
+          <div class="ai-notice-box">
+            ℹ️ <strong>Wajib Periksa Hasil AI:</strong> Setelah AI selesai membaca foto, hasilnya akan dimasukkan ke formulir agar Anda bisa memeriksa dan mengoreksi angkanya sebelum disimpan.
+          </div>
+        </div>
+
+        <!-- PREVIEW BAR KALORI YANG AKAN DICATAT -->
+        <div class="staged-calorie-bar">
+          <div class="staged-top">
+            <span>🔥 Kalori yang dicatat:</span>
+            <strong class="staged-kcal-num"><span id="stagedKcalValue">0</span> kkal</strong>
+          </div>
+          <div class="linear-progress-track sm">
+            <div class="linear-progress-fill" id="stagedProgressBar" style="width: 0%;"></div>
+          </div>
+          <div class="staged-bottom">
+            <span>✓ Sisa kalori setelah ini: <strong id="stagedRemainingAfter">553 kkal</strong></span>
+            <span class="safe-tag" id="stagedSafetyTag">Aman dalam target</span>
+          </div>
+        </div>
+
+        <!-- TOMBOL AKSI SIMPAN -->
+        <div class="log-footer-btns">
+          <button type="button" class="btn-soft" id="btnCancelLog">Batal</button>
+          <button type="button" class="btn-primary" id="btnSubmitMealLog">✓ Simpan Makanan</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         TAB 4: PREDIKSI BERAT BADAN 30 HARI (prediksi_berat_badan_30_hari.png)
+         ================================================================= -->
+    <section class="tab-pane" id="tab-prediksi">
+      <div class="pred-header">
+        <div>
+          <h2 class="headline-lg">Prediksi Berat Badan</h2>
+          <p class="caption-muted" id="predSubtitleDays">Berdasarkan defisit kalori riil yang tercatat.</p>
+        </div>
+        <span class="user-target-pill" id="predTargetBadge">Target: 58.0 kg</span>
+      </div>
+
+      <!-- Peringatan jika data kurang dari 7 hari (F4 PRD) -->
+      <div class="card warning-7days-card hidden" id="predMinDaysWarning">
+        <strong>📊 Membutuhkan Minimal 7 Hari Catatan</strong>
+        <p id="predMinDaysText">Saat ini baru tercatat 3 hari. Terus catat makanan harian Anda agar proyeksi 30 hari ke depan semakin akurat.</p>
+      </div>
+
+      <!-- Kartu Estimasi Kemajuan -->
+      <div class="card pred-hero-card">
+        <div class="pred-card-top">
+          <span class="overline-label">ESTIMASI KEMAJUAN</span>
+          <span class="accuracy-badge">✨ Estimasi Matematis</span>
+        </div>
+
+        <div class="weight-comparison-box">
+          <div>
+            <span class="caption-muted">Berat Saat Ini</span>
+            <div class="weight-big-num"><span id="predCurrentW">64.2</span> <small>kg</small></div>
+          </div>
+          <div class="arrow-circle">&rarr;</div>
+          <div class="right-align">
+            <span class="caption-muted">Prediksi 30 Hari</span>
+            <div class="weight-big-num teal"><span id="predFutureW">62.4</span> <small>kg</small></div>
+          </div>
+        </div>
+
+        <div class="delta-strip">
+          <span>📉 Perubahan diperkirakan</span>
+          <strong id="predDeltaWeight">-1.8 kg</strong>
+        </div>
+
+        <div class="remaining-goal-footnote" id="predRemainingToGoal">
+          🟠 Tersisa <strong>4.4 kg</strong> lagi menuju target ideal <strong>58.0 kg</strong>
+        </div>
+      </div>
+
+      <!-- Grafik Garis Proyeksi Berat Badan 30 Hari -->
+      <div class="card chart-card">
+        <div class="section-head-inline">
+          <div>
+            <h3 class="section-title">Proyeksi Berat Badan 30 Hari</h3>
+            <span class="caption-muted">Tren ritme stabil vs sasaran</span>
+          </div>
+          <span class="trend-icon">📈</span>
+        </div>
+
+        <div class="svg-chart-wrapper" id="predictionChartContainer"></div>
+
+        <div class="chart-legend">
+          <span><i class="legend-dot solid"></i> Riwayat Nyata</span>
+          <span><i class="legend-dot dashed"></i> Proyeksi Berkelanjutan</span>
+        </div>
+      </div>
+
+      <!-- 3 Kartu Angka Penjelas Prediksi -->
+      <div class="metrics-trio-grid">
+        <div class="metric-mini-card">
+          <span class="metric-mini-label">Rata-rata Asupan</span>
+          <div class="metric-mini-num" id="predAvgIntake">1.340</div>
+          <span class="metric-mini-sub">kkal/hari</span>
+        </div>
+        <div class="metric-mini-card">
+          <span class="metric-mini-label">TDEE Kebutuhan</span>
+          <div class="metric-mini-num" id="predTdeeVal">1.800</div>
+          <span class="metric-mini-sub">kkal/hari</span>
+        </div>
+        <div class="metric-mini-card">
+          <span class="metric-mini-label">Defisit Harian</span>
+          <div class="metric-mini-num apricot" id="predDailyDeficit">-460</div>
+          <span class="metric-mini-sub" id="predDeficitStatus">Aman & Stabil</span>
+        </div>
+      </div>
+
+      <!-- Kotak Edukasi Cara Kerja Perhitungan & Disclaimer Medis -->
+      <div class="card formula-explainer-card">
+        <h4>💡 Cara Kerja Perhitungan</h4>
+        <p id="predFormulaParagraph">
+          Dihitung dengan rumus <strong>7.700 kkal = 1 kg lemak tubuh</strong>. Dengan defisit rata-rata harian Anda, tubuh membakar cadangan energi secara konsisten selama 30 hari ke depan.
+        </p>
+        <div class="medical-disclaimer">
+          Catatan: Angka ini bersifat estimasi matematis dan bukan pengganti saran dokter atau ahli gizi.
+        </div>
+      </div>
+
+      <!-- Kartu Unduh PDF Langsung dari Halaman Prediksi -->
+      <div class="card pdf-cta-card">
+        <div class="pdf-cta-info">
+          <div class="pdf-icon-box">📄</div>
+          <div>
+            <strong>Dokumen Proyeksi Kesehatan</strong>
+            <p class="caption-muted">Format PDF resmi disiapkan untuk arsip atau konsultasi gizi</p>
+          </div>
+        </div>
+        <button type="button" class="btn-primary full-width" id="btnExportPdfFromPred">
+          ⬇️ Unduh Laporan PDF Lengkap
+        </button>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         TAB 5: LAPORAN TABEL, FILTER & ARSIP PDF (F6 & F7 PRD)
+         ================================================================= -->
+    <section class="tab-pane" id="tab-laporan">
+      <div class="card report-filter-card">
+        <div class="section-head-inline">
+          <h2 class="section-title">Laporan & Riwayat Gizi</h2>
+          <button type="button" class="btn-primary sm" id="btnExportPdfMain">⬇️ Cetak PDF</button>
+        </div>
+
+        <div class="filter-bar-grid">
+          <input type="text" id="repSearchFood" placeholder="🔍 Cari nama makanan..." />
+          <select id="repFilterMealTime">
+            <option value="ALL">Semua Waktu Makan</option>
+            <option value="Sarapan">Sarapan</option>
+            <option value="Makan siang">Makan Siang</option>
+            <option value="Makan malam">Makan Malam</option>
+            <option value="Camilan">Camilan</option>
+          </select>
+          <select id="repFilterPeriod">
+            <option value="7">7 Hari Terakhir</option>
+            <option value="30" selected>30 Hari Terakhir</option>
+            <option value="ALL">Semua Riwayat</option>
+          </select>
+        </div>
+
+        <!-- Grafik Kalori Harian vs Target -->
+        <div class="report-bar-chart-wrap">
+          <h3 class="sub-headline">Grafik Kalori Harian vs Target (7 Hari Terakhir)</h3>
+          <div id="dailyCalorieBarChart" class="bar-chart-box"></div>
+        </div>
+
+        <!-- Tabel Catatan Makan -->
+        <div class="table-responsive">
+          <table class="nourish-table">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Waktu</th>
+                <th>Makanan & Porsi</th>
+                <th>Kalori</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="reportTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =================================================================
+       MODAL 1: CATAT BERAT BADAN BARU
+       ================================================================= -->
+  <div class="modal-backdrop hidden" id="modalWeight">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3>⚖️ Catat Berat Badan Hari Ini</h3>
+        <button type="button" class="modal-close" data-close="modalWeight">&times;</button>
+      </div>
+      <form id="formLogWeight" class="form-stack">
+        <div class="form-group">
+          <label for="inpNewWeightKg">Berat Badan (kg) *</label>
+          <input type="number" id="inpNewWeightKg" step="0.1" min="30" max="250" required />
+        </div>
+        <div class="form-group">
+          <label for="inpWeightNote">Catatan (Opsional)</label>
+          <input type="text" id="inpWeightNote" placeholder="Contoh: Timbang pagi sebelum sarapan" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-soft" data-close="modalWeight">Batal</button>
+          <button type="submit" class="btn-primary">Simpan Berat</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       MODAL 2: PENGATURAN PROFIL & BATAS AMAN KALORI (F8 PRD)
+       ================================================================= -->
+  <div class="modal-backdrop hidden" id="modalProfile">
+    <div class="modal-sheet large">
+      <div class="modal-header">
+        <h3>⚙️ Pengaturan Profil & Target Kalori</h3>
+        <button type="button" class="modal-close" data-close="modalProfile">&times;</button>
+      </div>
+      <form id="formProfileSettings" class="form-stack">
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="profEmail">Akun Pengguna</label>
+            <select id="profEmail">
+              <option value="istri@nourishtrack.id">Istri (istri@nourishtrack.id)</option>
+              <option value="suami@nourishtrack.id">Suami (suami@nourishtrack.id)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="profNama">Nama Tampilan *</label>
+            <input type="text" id="profNama" required />
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="profGender">Jenis Kelamin *</label>
+            <select id="profGender">
+              <option value="P">Perempuan (Batas Aman &ge; 1.200 kkal)</option>
+              <option value="L">Laki-laki (Batas Aman &ge; 1.500 kkal)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="profDob">Tanggal Lahir *</label>
+            <input type="date" id="profDob" required />
+          </div>
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-group">
+            <label for="profHeight">Tinggi (cm) *</label>
+            <input type="number" id="profHeight" min="120" max="220" required />
+          </div>
+          <div class="form-group">
+            <label for="profWeight">Berat Kini (kg) *</label>
+            <input type="number" id="profWeight" step="0.1" min="35" max="220" required />
+          </div>
+          <div class="form-group">
+            <label for="profTargetWeight">Berat Target (kg) *</label>
+            <input type="number" id="profTargetWeight" step="0.1" min="35" max="200" required />
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="profActivity">Level Aktivitas Harian *</label>
+            <select id="profActivity">
+              <option value="sedentari">Sedentari (Jarang olahraga - 1.2x)</option>
+              <option value="ringan">Ringan (Olahraga 1-3x/minggu - 1.375x)</option>
+              <option value="sedang">Sedang (Olahraga 3-5x/minggu - 1.55x)</option>
+              <option value="berat">Berat (Olahraga 6-7x/minggu - 1.725x)</option>
+              <option value="sangat berat">Sangat Berat (Fisik intensif - 1.9x)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="profWeeklyRate">Target Laju Turun (kg/minggu) *</label>
+            <select id="profWeeklyRate">
+              <option value="0.25">0.25 kg / minggu (Santai)</option>
+              <option value="0.42">0.42 kg / minggu (Rekomendasi)</option>
+              <option value="0.5">0.50 kg / minggu (Optimal)</option>
+              <option value="0.75">0.75 kg / minggu (Intensif)</option>
+              <option value="1.0">1.00 kg / minggu (Maksimum Aman)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="safety-info-box" id="profileCalcPreview">
+          BMI, TDEE (Mifflin-St Jeor), dan Target Kalori Harian akan dihitung otomatis dan dijaga agar tidak turun di bawah batas aman medis.
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-soft" data-close="modalProfile">Tutup</button>
+          <button type="submit" class="btn-primary">Simpan & Hitung Ulang</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-feedback hidden" id="appToast">
+    <span class="toast-check">✓</span>
+    <span id="toastMessage">Makanan berhasil dicatat!</span>
+  </div>
+
+  <!-- BOTTOM NAVIGATION BAR (5 MENU SESUAI SCREENSHOT) -->
+  <nav class="bottom-nav" aria-label="Navigasi Utama">
+    <button type="button" class="nav-item active" data-target="tab-ringkasan">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Ringkasan</span>
+    </button>
+    <button type="button" class="nav-item" data-target="tab-bukumakan">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      <span>Buku Makan</span>
+    </button>
+    <button type="button" class="nav-item nav-fab-wrap" data-target="tab-catat" aria-label="Catat Makanan">
+      <div class="nav-fab-circle">+</div>
+      <span class="fab-caption">Catat</span>
+    </button>
+    <button type="button" class="nav-item" data-target="tab-prediksi">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      <span>Prediksi</span>
+    </button>
+    <button type="button" class="nav-item" data-target="tab-laporan">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Laporan</span>
+    </button>
+  </nav>
+
+  <!-- JAVASCRIPT MODULES -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
